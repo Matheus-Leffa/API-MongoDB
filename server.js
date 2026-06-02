@@ -62,6 +62,62 @@ app.get('/pesquisa', async (req, res) => {
     res.json({ total: docs.length, dados: docs });
 });
 
+app.get('/relatorio/negativo', async (req, res) => {
+
+    const db = await connection.getDb();
+
+
+    const docs = await db.collection(COLLECTION).aggregate([
+    {
+      $unwind: "$metricas.principais_problemas"
+    },
+    {
+      $group: {
+        _id: "$metricas.principais_problemas",
+        ocorrencias: {
+          $sum: 1
+        }
+      }
+    },
+    {
+      $sort: {
+        ocorrencias: -1
+      }
+    }
+    ]).toArray();
+
+    
+    res.json(docs);
+});
+
+app.get('/relatorio/positivo', async (req, res) => {
+
+    const db = await connection.getDb();
+
+
+    const docs = await db.collection(COLLECTION).aggregate([
+    {
+      $unwind: "$metricas.pontos_positivos"
+    },
+    {
+      $group: {
+        _id: "$metricas.pontos_positivos",
+        ocorrencias: {
+          $sum: 1
+        }
+      }
+    },
+    {
+      $sort: {
+        ocorrencias: -1
+      }
+    }
+    ]).toArray();
+
+    
+    res.json(docs);
+});
+
 app.listen(PORT, () => {
 console.log(`Servidor rodando em http://localhost:${PORT}`);
 });
